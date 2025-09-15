@@ -15,3 +15,9 @@ uv pip install -r requirements.txt
 ```
 uv run src/pipeline_baseline.py
 ```
+
+- Run QLoRA finetuning and compare its performances with baseline
+
+```
+uv run src/pipeline_finetune.py
+```
