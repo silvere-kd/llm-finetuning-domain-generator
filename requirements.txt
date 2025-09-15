@@ -1,0 +1,16 @@
+transformers
+accelerate
+peft
+bitsandbytes
+datasets
+trl
+evaluate
+scikit-learn
+tqdm
+pydantic
+fastapi
+uvicorn
+python-dotenv
+tyro
+unsloth
+xformers

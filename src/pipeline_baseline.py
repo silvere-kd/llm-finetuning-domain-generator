@@ -1,0 +1,32 @@
+# src/pipeline_baseline.py
+"""
+Orchestration of the full baseline pipeline.
+"""
+
+import yaml, pathlib
+from steps.data_step import run_data_step
+from steps.model_step import run_model_step
+from steps.scoring_step import run_scoring_step
+from steps.analysis_step import run_analysis_step
+from cfg import load_config
+
+
+def main():
+    cfg = load_config()
+
+    # STEP 1 — Data
+    run_data_step()
+
+    # STEP 2 — Model + Predictions
+    pred_path = run_model_step(cfg, out_dir="outputs/baseline")
+
+    # STEP 3 — Scoring
+    #pred_path = "outputs/baseline/predictions.jsonl"
+    score_dir = run_scoring_step(cfg, pred_path, out_dir="outputs/baseline_eval_openai")
+
+    # STEP 4 — Analysis
+    details_path = str(pathlib.Path(score_dir) / "details.jsonl")
+    run_analysis_step(details_path, pred_path, out_dir="outputs/baseline_analysis")
+
+if __name__ == "__main__":
+    main()

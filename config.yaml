@@ -1,0 +1,67 @@
+model_name: mistralai/Mistral-7B-Instruct-v0.3
+output_dir: outputs/mistral7b_qlora
+seed: 42
+
+dataset:
+  raw:
+    backend: "llm"         # "rule" | "llm" | "hybrid"
+    llm_model: "gpt-4o-mini"
+    N: 5000                 # number of safe business_desc rows
+    unsafe_multiplier: 0.2  # 10% as many unsafe records as safe ones
+    n_per_desc: 5
+    temperature: 0.8
+    top_p: 0.9
+    max_retries: 3
+    sleep_sec: 0.6
+    hybrid_ratio: 0.3       # % of rows using LLM when backend="hybrid"
+    path: data/raw/synth.jsonl
+
+  processed:
+    train_path: data/processed/train.jsonl
+    val_path: data/processed/val.jsonl
+    train_ratio: 0.9  
+
+baseline:
+  n_prompts: 64          # how many prompts to score for baseline
+  max_new_tokens: 192
+  temperature: 0.9
+  top_p: 0.9
+  gen_batch_size: 4
+
+train:
+  lr: 2.0e-4
+  batch_size: 64
+  micro_batch_size: 2
+  grad_accum: 16
+  epochs: 1
+  warmup_ratio: 0.03
+  weight_decay: 0.0
+  max_seq_len: 512
+
+lora:
+  r: 16
+  alpha: 32
+  dropout: 0.05
+  target_modules: ["q_proj","k_proj","v_proj","o_proj","gate_proj","up_proj","down_proj"]
+
+quantization:
+  load_in_4bit: true
+  bnb_4bit_compute_dtype: "bfloat16"
+  bnb_4bit_quant_type: "nf4"
+  bnb_4bit_use_double_quant: true
+
+unsloth:
+  qlora: true
+  gradient_checkpointing: true
+  use_gradient_accumulation: true
+  gradient_checkpointing: true
+
+
+eval:
+  judge: "openai"
+  judge_model: "gpt-4o"   # or "gpt-4-turbo" / "gpt-4o-mini"
+  rubric_weights: {relevance: 0.4, memorability: 0.3, readability: 0.2, safety: 0.1}
+
+api:
+  host: 0.0.0.0
+  port: 8000
