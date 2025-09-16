@@ -14,6 +14,7 @@ from transformers import (
 from peft import LoraConfig, get_peft_model, prepare_model_for_kbit_training
 from trl import SFTTrainer, SFTConfig
 from cfg import load_config
+import gc
 
 cfg = load_config()
 
@@ -119,6 +120,15 @@ def main():
     # Save merged model & tokenizer to OUTPUT_DIR (overwrites with merged)
     merged.save_pretrained(OUTPUT_DIR)
     tokenizer.save_pretrained(OUTPUT_DIR)
+
+    # Free some memory    
+    del base_model
+    del tokenizer
+    del trainer
+    del ds_train
+    del ds_val
+    torch.cuda.empty_cache()
+    gc.collect()
 
     print(f"[train_hf_qlora] Training complete. Merged model saved -> {OUTPUT_DIR}")
 

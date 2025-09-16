@@ -8,6 +8,7 @@ from model_unsloth import load_model
 from unsloth import FastLanguageModel
 from peft import LoraConfig
 from cfg import load_config
+import gc
 
 cfg = load_config()
 
@@ -93,6 +94,15 @@ def main():
     merged.config.use_cache = True
     merged.save_pretrained(cfg["output_dir"])
     tokenizer.save_pretrained(cfg["output_dir"])
+
+    # Free some memory    
+    del base_model
+    del tokenizer
+    del trainer
+    del ds_train
+    del ds_val
+    torch.cuda.empty_cache()
+    gc.collect()
 
     print(f"[train_unsloth] Training complete. Merged model saved -> {cfg['output_dir']}")
 
